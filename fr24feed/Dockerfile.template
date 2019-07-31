@@ -1,0 +1,30 @@
+FROM balenalib/%%BALENA_ARCH%%-debian:stretch as run
+
+RUN apt-get update && \
+	apt-get install -y wget dirmngr gnupg systemd libcap2-bin
+
+WORKDIR /tmp
+# Import GPG key for the APT repository
+RUN mkdir ~/.gnupg && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf
+RUN gpg --keyserver pool.sks-keyservers.net --recv-keys 40C430F5
+RUN gpg --armor --export 40C430F5 | sudo apt-key add -
+# Add APT repository to the config file, removing older entries if exist
+RUN mv /etc/apt/sources.list /etc/apt/sources.list.bak && \
+    grep -v flightradar24 /etc/apt/sources.list.bak > /etc/apt/sources.list && \
+    echo 'deb http://repo.feed.flightradar24.com flightradar24 raspberrypi-stable' >> /etc/apt/sources.list
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fr24feed
+
+ENV RECEIVER_HOST dump1090-fa
+ENV RECEIVER_PORT 30002
+
+RUN apt-get update && \
+	apt-get install -y supervisor gettext-base
+
+COPY start.sh /
+RUN chmod +x /start.sh
+
+COPY supervisor /etc/supervisor
+COPY fr24feed.ini.tpl /etc
+
+ENTRYPOINT ["/start.sh"]

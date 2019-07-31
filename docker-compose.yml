@@ -1,0 +1,46 @@
+version: '2'
+services:
+  dump1090-fa:
+    build: ./dump1090-fa
+    image: dump1090-fa
+    environment:
+      - LAT=
+      - LON=
+    devices:
+      - "/dev/bus/usb"
+    expose:
+      - "30001"
+      - "30002"
+      - "30003"
+      - "30004"
+      - "30005"
+      - "30104"
+      - "8080"
+    ports:
+      - "80:8080"
+  piaware:
+    depends_on:
+      - dump1090-fa
+    build: ./piaware
+    image: piaware
+    environment:
+      - FLIGHTAWARE_FEEDER_ID=
+  fr24feed:
+    depends_on:
+      - dump1090-fa
+    build: ./fr24feed
+    image: fr24feed
+    environment:
+      - FR24_KEY=
+# Optional: Uncomment to enable custom mlat server.
+#  360radar-mlat-client:
+#    depends_on:
+#      - dump1090-fa
+#    build: ./mlat-client
+#    image: mlat-client
+# Optional: 360Radar ADS-B logger.
+#  360radar-ads-b:
+#    depends_on:
+#      - dump1090-fa
+#    build: ./360radar-ads-b
+#    image: 360radar-ads-b

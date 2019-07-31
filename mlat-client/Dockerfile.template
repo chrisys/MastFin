@@ -1,0 +1,16 @@
+FROM balenalib/%%BALENA_ARCH%%-debian:stretch as run
+
+RUN apt-get update && \
+	apt-get install -y build-essential debhelper python3-dev python-distutils-extra git init-system-helpers supervisor
+
+RUN git clone --recursive https://github.com/mutability/mlat-client.git
+WORKDIR mlat-client
+
+RUN dpkg-buildpackage -b -uc
+
+RUN dpkg -i ../mlat-client_*_*.deb
+
+ADD supervisor /etc/supervisor
+
+ENTRYPOINT ["supervisord"]
+CMD ["-c", "/etc/supervisor/supervisord.conf"]
