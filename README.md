@@ -2,7 +2,7 @@
 #  Balena ADS-B Multi-Service Flight Tracker
 **Balena-ready dump1090-fa + piaware + fr24feed + planefinder**
 
-Contribute to the flight tracking community! Feed your local ADS-B data from an [RTL-SDR](https://www.rtl-sdr.com/) USB dongle and a Raspberry Pi running BalenaOS to the tracking services [FlightAware](https://flightaware.com/), [Flightradar24](https://www.flightradar24.com/), and [https://planefinder.net/](https://planefinder.net/). In return, you will receive free premium accounts (worth several hundred dollars/year)! 
+Contribute to the flight tracking community! Feed your local ADS-B data from an [RTL-SDR](https://www.rtl-sdr.com/) USB dongle and a Raspberry Pi running BalenaOS to the tracking services [FlightAware](https://flightaware.com/), [Flightradar24](https://www.flightradar24.com/), and [Plane Finder](https://planefinder.net/). In return, you will receive free premium accounts (worth several hundred dollars/year)! 
 
 This project is inspired by and has borrowed code from the following repos:  
 
