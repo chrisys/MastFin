@@ -32,15 +32,10 @@ services:
     image: fr24feed
     environment:
       - FR24_KEY=
-# Optional: Uncomment to enable custom mlat server.
-#  360radar-mlat-client:
-#    depends_on:
-#      - dump1090-fa
-#    build: ./mlat-client
-#    image: mlat-client
-# Optional: 360Radar ADS-B logger.
-#  360radar-ads-b:
-#    depends_on:
-#      - dump1090-fa
-#    build: ./360radar-ads-b
-#    image: 360radar-ads-b
+  planefinder:
+    depends_on:
+      - dump1090-fa
+    build: ./planefinder
+    image: planefinder
+    #ports:
+    #  - "80:30053"

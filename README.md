@@ -1,4 +1,5 @@
 
+
 #  Balena ADS-B Multi-Service Flight Tracker
 **Balena-ready dump1090-fa + piaware + fr24feed + planefinder**
 
@@ -32,11 +33,12 @@ In addition to the Pi, you will need an RTL-SDR compatible USB dongle. The dongl
  7. From the Balena dashboard, navigate to the application you just created. Within a few minutes, a new device with an automatically generated name should appear. Click on it to open it.
  8. Rename your device to your taste by clicking on the pencil icon next to the current device name.
  9. Next, we'll configure the receive with its geographic location. Unless you happen to know this by heart, you can use [Google Maps](https://maps.google.com) to find it. When you click on your desired location on the map, the corresponding coordinates should appear. We are looking for the decimal coordinates, which should look similar to this: 60.395429, 5.325127.
- 10. Back in the Balena console, verify that you have opened up the view for your desired device. Click on the *Device Varibles*-button – *D(x)*. Add the following two variables: `LAT` *(Receiver Latitude)*, e.g. with a value such as `60.12345` and `LON` *(Receiver Longitude)*, e.g. with a value such as `4.12345`.
- 11. Almost there! Next, we are going to push this code to your device through the Balena cloud. Head into your terminal and clone this repository to your local computer: `git clone git@github.com:ketilmo/balena-ads-b.git`
- 12. Add a Balena remote to your newly created local Git repo. You'll find the exact command you need for this at the Application page in your Balena dashboard. It should look something like this: `git remote add balena your_username@git.balena-cloud.com:your_username/your_application_name.git`
- 13. Push the code to Balena's servers by typing `git push balena master`. 
- 14. Now, wait while the Docker containers build on Balena's servers. If the process is successful, you will see a beautiful piece of ASCII art depicting a unicorn:
+ 10. Back in the Balena console, verify that you have opened up the view for your desired device. Click on the *Device Variables*-button – *D(x)*. Add the following two variables: `LAT` *(Receiver Latitude)*, e.g. with a value such as `60.12345` and `LON` *(Receiver Longitude)*, e.g. with a value such as `4.12345`.
+ 11. Now, you're going to enter the receiver's altitude in feet above sea level in a new variable named `ALT`. If you don't know the altitude, you can find it using [one of several online services](https://www.maps.ie/coordinates.html). If your antenna is mounted above ground level, remember to add the approximate number of corresponding feet.
+ 12. Almost there! Next, we are going to push this code to your device through the Balena cloud. Head into your terminal and clone this repository to your local computer: `git clone git@github.com:ketilmo/balena-ads-b.git`
+ 13. Add a Balena remote to your newly created local Git repo. You'll find the exact command you need for this at the Application page in your Balena dashboard. It should look something like this: `git remote add balena your_username@git.balena-cloud.com:your_username/your_application_name.git`
+ 14. Push the code to Balena's servers by typing `git push balena master`. 
+ 15. Now, wait while the Docker containers build on Balena's servers. If the process is successful, you will see a beautiful piece of ASCII art depicting a unicorn:
 <pre>
 			    \
 			     \
@@ -67,62 +69,93 @@ In addition to the Pi, you will need an RTL-SDR compatible USB dongle. The dongl
 
 
 ## Part 3 – Configure FlightAware
-If you have previously setup a FlightAware receiver, and want to port it to Balena, you only have to follow the following steps:
+### Alternative A: Port an existing FlightAware receiver
+If you have previously set up a standalone FlightAware receiver, and want to port it to Balena, you only have to do the following steps:
 
-* Head back to your device's page in Balena, and click on the Device Varibles-button D(x). Add the following variable:
-	* FLIGHTAWARE_FEEDER_ID, then paste your ´Unique Identifier´, eg. 134cdg7d-7533-5gd4-d31d-r31r52g63v12.
-* Restart the "piaware" application under "Services" by clicking the "cycle" button.
+ 1. Head back to your device's page in the Balena dashboard and click on the *Device Variables*-button – *D(x)*. Add the following variable: `FLIGHTAWARE_FEEDER_ID`, then paste your *Unique Identifier* key, eg. `134cdg7d-7533-5gd4-d31d-r31r52g63v12`. The ID can be found on the *My ADS-B* section at the FlightAware website.
+ 2. From the Balena dashboard, restart the *piaware* application under *Services* by clicking the "cycle" icon next to the service name.
 
-If you have not previously setup FlightAware, do the following steps:
+### Alternative B: Setup a new FlightAware receiver
+If you have not previously set up a FlightAware receiver that you want to reuse, do the following steps:
 
-* Register a new account at FlightAware: https://flightaware.com/account/join/
-* Login using your newly created credentials.
-* From the same network (either cabled or wireless) as the RPi is running on, head to this page: https://flightaware.com/adsb/piaware/claim
-* See if any receivers shows up under "Linked PiAware Receivers". If now, wait about five minutes and click the "Check Again for my PiAware"-button. Hopefully, your receiver is now visible under the "Linked PiAware Receivers" headers.
-* In the left-hand-side menu on the top of the page, click the "My ADBS-B"-link. Your device should visible in an orange rectangle. Click the cogwheel icon on the right-hand side of the screen.
-* Click the "Configure Location"-button, and verify that the location matches the coordinates you entered earlier. If not, correct them.
-* Click the "Configue Height"-button, and specify the altitude of you receiver. If you don't know the receivers altitude, you can find it here using your coordinates: https://www.maps.ie/coordinates.html
-* If you have unrestricred bandwith, enable MLAT. This will make your receiver connect to other nearby receivers to multilaterate positions of planes that does not report their position. If you have restricted bandwidth, consider leaving this off. 
-* Specify the other settings according to your personal preferences.
-* Close the lightbox. Find and copy your receiver's ´Unique Identifier´. It should look somethign like this: 134cdg7d-7533-5gd4-d31d-r31r52g63v12
-* Head back to your device's page in Balena, and click on the Device Varibles-button D(x). Add the following variable:
-	* FLIGHTAWARE_FEEDER_ID, then paste your ´Unique Identifier´, eg. 134cdg7d-7533-5gd4-d31d-r31r52g63v12.
+
+ 1. Register [a new account](https://flightaware.com/account/join/) at FlightAware: 
+ 2. Login using your newly created credentials.
+ 3. While being connected to the same network (either cabled or wireless) as your receiver is linked to, head to FlightAware's *[Claim Receiver](https://flightaware.com/adsb/piaware/claim)* page.
+ 4. Check if any receivers show up under the *Linked PiAware Receivers* heading. (If not, wait about five minutes and click the *Check Again for my PiAware*-button.) Hopefully, your receiver is now visible under the *Linked PiAware Receivers* header.
+ 5. In the left-hand-side menu on the top of the page, click the *My ADBS-B* menu item. Your device should be listed in an orange rectangle. Next, click the cogwheel icon on the right-hand side of the screen.
+ 6. Click the *Configure Location*-button, and verify that the location matches the coordinates you entered earlier. If not, correct them.
+ 7. Click the *Configure Height*-button, and specify the altitude of your receiver. The value should match the number you entered in the `ALT` variable in part 1.
+ 8. If you don't face any bandwidth constraints, enable multilateration (MLAT). Enabling MLAT lets your receiver connect to other nearby receivers to multilaterate the positions of aircraft that does not report their position through ADS-B. This option increases the bandwidth usage a bit but gives more visible aircraft positions in return. 
+ 9. Specify the other settings in the FlightAware lightbox according to your personal preferences.
+ 10. Close the lightbox. Find and copy your receiver's *Unique Identifier*. It should look something like this: `134cdg7d-7533-5gd4-d31d-r31r52g63v12`.
+ 11. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button – *D(x)*. Add the following variable: `FLIGHTAWARE_FEEDER_ID`, then paste your *Unique Identifier*, eg. `134cdg7d-7533-5gd4-d31d-r31r52g63v12`.
 
 ## Part 4 – Configure FlightRadar24
+### Alternative A: Port an existing FlightRadar24 receiver
+If you have previously set up a FlightRadar24 receiver and want to port it to Balena, you only have to do the following steps:
 
-If you have previously setup a FlightRadar24 receiver, and want to port it to Balena, you only have to follow the following steps:
+ 1. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button – *D(x)*. Add a variable named `FR24_KEY` and paste the value of your existing FlightRadar24 key, e.g. `dv4rrt2g122g7233`. The key is located in the FlightRadar24 config file, which is usually found here: `/etc/fr24feed.ini`. (If you are unable to locate your old key, retrieve or create a new one it by following the steps in alternative B.)
+ 2. Restart the *fr24feed* application under *Services* by clicking the "cycle" icon next to the service name.
 
-* Head back to your device's page in Balena, and click on the Device Varibles-button D(x). Add the following variable:
-	* FR24_KEY, then paste your ´fr24key´ from the previous step, eg. dv4rrt2g122g7233.
-* Restart the "fr24feed" application under "Services" by clicking the "cycle" button.
+### Alternative B: Setup a new FlightRadar24 receiver
+If you have not previously set up a FlightRadar24 receiver that you want to reuse, do the following steps:
 
-If you have not previously setup FlightRadar24, do the following steps:
+ 1. Head back to your device's page on the Balena dashboard.
+ 2. Inside the *Terminal* section, click *Select a target*, then *fr24feed*, and finally *Start terminal session*.
+ 3. This will open a terminal which lets you interact directly with your FlightRadar24 container.
+ 4. At the prompt, enter `fr24feed --signup`.
+ 5. When asked, enter your email address.
+ 6. You will be asked if you have a FlightRadar sharing key. Unless you have one from the past that you would like to reuse, press return here.
+ 7. If you want to activate multilateration, type `yes` at the next prompt. If you have restricted bandwidth available, consider leaving it off by typing `no`. 
+ 8. Enter the receiver's latitude. This should be the exact same value that you entered in the `LAT` variable in part 1.
+ 9. Enter the receiver's longitude. This should be the exact same value that you entered in the `LON` variable in part 1.
+ 10. Finally, enter the receiver's altitude in feet. This should be the same value that you entered in the `ALT` variable in part 1.
+ 11. Now, a summary of your settings will be displayed. If you are happy with the result, type `yes` to continue.
+ 12. Under receiver type, choose `4` for ModeS Beast.
+ 13. Under connection type, choose `1` for network connection.
+ 14. When asked for your receiver's IP address/hostname, enter `dump1090-fa`.
+ 15. Next, enter the data port number: `30005`.
+ 16. Type `yes` to enable the RAW data feed on port 30334.
+ 17. Type `yes` to enable the Basestation data feed on port 30003.
+ 18. Enter `0` to disable log file writing.
+ 19. When asked for a log file path, just hit return.
+ 20. The configuration will now be submitted, and you are redirected back to the terminal.
+ 21. At the prompt, type `cat /etc/fr24feed.ini`. Your FlightRadar settings will be displayed. 
+ 22. Find the line starting with `fr24key=`, and copy the string between the quotes. It will look something like this: `dv4rrt2g122g7233`.
+ 23. Click on the *Device Variables*-button – *D(x)* in the left-hand menu. Add a variable named `FR24_KEY` and paste the value from the previous step, e.g. `dv4rrt2g122g7233`.
+ 24. Restart the *fr24feed* application under *Services* by clicking the "cycle" icon next to the service name.
+ 25. As soon as your receiver starts receiving data, you will receive an e-mail from FlightRadar24 containing your login credentials.
 
-* Head back to your device's page in Balena.
-* Inside the "Termnial" section, click "Select a target", then ´fr24feed´, then "Start terminal session."
-* This will open a terminal inside your FlightRadar24 container.
-* At the prompt, enter ´fr24feed --signup´
-* Enter your email address when asked.
-* Next, you will be asked if you have a FlightRadar sharing key. Unless you have one from the past, rust press return here.
-* If you want to activate multilateration, type ´yes´ at the next prompt. If you have restricted bandwidth available, consider leaving it off by typing ´no´. 
-* Enter the receiver's latitude. This should be the exact same value that you entered initially.
-* Enter the receiver's longitude. This should be the exact same value that you entered initially.
-* Then, enter the receiver's altitude in feet. This should be the same value that you entered in the FlightAware configuration earlier.
-* Now, a summary of your settings will be displayed. If you are happy with the result, type yes to continue.
-* Under receiver type, choose 4 for ModeS Beast.
-* Under connection type, choose 1 for Network connection.
-* When asked for your receiver's IP address/hostname, enter ´dump1090-fa´.
-* Next, enter the data port number: ´30005´.
-* Type ´yes´ to enable the RAW data feed on port 30334.
-* Type ´yes´ to enable the Basestation data feed on port 3003.
-* Enter ´0´ to disable log file writing.
-* When asked for a log file path, just hit return.
-* The configuration is now submitted, and you are redirected back to the terminal.
-* Type ´cat /etc/fr24feed.ini´
-* Your FlightRadar settings will be displayed. 
-* Find the line starting with ´fr24key=´, and copy the string between the quotes. It will look something like this: dv4rrt2g122g7233.
-* Click on the Device variablees-button D(x) in the left-hand menu. Add the following variable:
-	* FR24_KEY, then paste your ´fr24key´ from the previous step, eg. dv4rrt2g122g7233.
-* Restart the "fr24feed" application under "Services" by clicking the "cycle" button.
-* As soon as your receiver starts receiving data, you will receive an e-mail from FlightRadar24 containing your login credentials.
-* You are all set. Enjoy!
+## Part 5 – Configure Plane Finder
+### Alternative A: Port an existing Plane Finder receiver
+If you have previously set up a Plane Finder receiver and want to port it to Balena, you only have to do the following steps:
+
+ 1. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button – *D(x)*. Add a variable named `PLANEFINDER_SHARECODE` and paste the value of your existing Plane Finder key, e.g. `7e3q8n45wq369`. You can find your key at Plane Finder's *[Your Receivers](https://planefinder.net/account/receivers)* page.
+ 2. On your device's page in the Balena dashboard, restart the *planefinder* application under *Services* by clicking the "cycle" icon next to the service name.
+
+### Alternative B: Setup a new FlightRadar24 receiver
+If you have not previously set up a Plane Finder receiver that you want to reuse, do the following steps:
+
+ 1. Register a new [Plane Finder account](https://planefinder.net).
+ 2. Locate your local clone of this git repo, `balena-ads-b`, then navigate to the folder `planefinder`.
+ 3. Open the file `SharecodeGenerator.html` in your web browser.
+ 4. Fill in the form to generate a Plane Finder share code. Use the same email address as you used when registering for the Plane Finder account. For *Receiver Lat*, use the value from the `LAT` variable in part 2. For *Receiver Lon*, use the value from the `LON` variable.
+ 5. Head back to the Balena dashboard and your device's page. Click on the *Device Variables*-button – *D(x)*. Add a variable named `PLANEFINDER_SHARECODE` and paste the value of the Plane Finder key you just created, e.g. `7e3q8n45wq369`.
+ 6. On your device's page in the Balena dashboard, restart the *planefinder* application under *Services* by clicking the "cycle" icon next to the service name.
+
+## Part 6 – Exploring flight traffic locally
+If the setup went well, you should now be feeding flight traffic data to several online services. In return for this, you will receive access to the providers' premium services. In addition to this, you can tune into the radar views straight on your Raspberry Pi.
+
+### Views available in the local network
+
+When you have local network access to your receiver, you get several beautiful web views. Start by opening your device page in Balena console and locate the `IP ADDRESS` field, e.g. `10.0.0.10`.
+
+ **Dump1090's Radar View**
+This view visualizes everything that your receiver sees, including multilaterated plane positions. Head to `YOURIP:8080` to check it out.
+
+**Plane Finder's Radar View**
+Similar to the Dump1090, Plane Finder adds 3D visualization and other nice viewing options. Head to `YOURIP:30053` to check it out.
+
+### Views available remotely through Balena's proxy
+Away from your local network but still eager to know what planes are cruising over your home? Here, Balena's builtin *Public Device URL* comes in handy. Open your device page in Balena console and locate the `PUBLIC DEVICE URL` header, and flip the switch below it. Finally, click on the arrow icon next to the button and voila – you should see your traffic through the Dump1090 radar view. Enjoy!

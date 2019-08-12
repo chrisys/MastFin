@@ -1,0 +1,23 @@
+FROM balenalib/%%BALENA_ARCH%%-debian:stretch as run
+
+EXPOSE 30053
+
+ENV RECEIVER_HOST dump1090-fa
+ENV RECEIVER_PORT 30002
+
+RUN apt-get update && \
+	apt-get install -y wget gettext-base && \
+	apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tmp
+
+RUN wget http://client.planefinder.net/pfclient_4.1.1_armhf.deb
+RUN dpkg -i pfclient_4.1.1_armhf.deb
+RUN rm pfclient_4.1.1_armhf.deb
+
+COPY start.sh /
+COPY pfclient-config.json.tpl /etc
+
+RUN chmod +x /start.sh
+
+ENTRYPOINT ["/start.sh"]
