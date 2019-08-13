@@ -1,4 +1,6 @@
 version: '2'
+volumes:
+    balena-data:
 services:
   dump1090-fa:
     build: ./dump1090-fa
@@ -37,5 +39,10 @@ services:
       - dump1090-fa
     build: ./planefinder
     image: planefinder
-    #ports:
-    #  - "80:30053"
+    ports:
+     - "30053"
+  ttn-gateway:
+    devices:
+      - "/dev/bus/usb"
+      - "/dev/ttyAMA0"
+    build: ./ttn-gateway
