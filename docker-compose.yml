@@ -46,3 +46,8 @@ services:
       - "/dev/bus/usb"
       - "/dev/ttyAMA0"
     build: ./ttn-gateway
+  360radar-mlat-client:
+     depends_on:
+       - dump1090-fa
+     build: ./mlat-client
+     image: mlat-client
