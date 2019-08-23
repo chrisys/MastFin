@@ -18,6 +18,8 @@ services:
       - "30005"
       - "30104"
       - "8080"
+    ports:
+      - "8080"
   piaware:
     depends_on:
       - dump1090-fa
