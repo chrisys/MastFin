@@ -56,20 +56,7 @@
       "targets": [
         {
           "alias": "CPU ºC (/sys/class/thermal/thermal_zone0/temp)",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
+          "groupBy": [],
           "measurement": "cpu_temperature",
           "orderByTime": "ASC",
           "policy": "default",
@@ -84,10 +71,6 @@
                 "type": "field"
               },
               {
-                "params": [],
-                "type": "mean"
-              },
-              {
                 "params": [
                   " / 1000"
                 ],
@@ -99,20 +82,7 @@
         },
         {
           "alias": "CPU ºC (vcgencmd)",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
+          "groupBy": [],
           "measurement": "gpu_temperature",
           "orderByTime": "ASC",
           "policy": "default",
@@ -125,10 +95,6 @@
                   "value"
                 ],
                 "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
               }
             ]
           ],
@@ -185,7 +151,7 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {
@@ -216,5 +182,5 @@
   "timezone": "",
   "title": "MastFin Monitor",
   "uid": "hJEoGiZgk",
-  "version": 2
+  "version": 3
 }
