@@ -18,8 +18,6 @@ services:
       - "30005"
       - "30104"
       - "8080"
-    ports:
-      - "80:8080"
   piaware:
     depends_on:
       - dump1090-fa
@@ -51,3 +49,22 @@ services:
        - dump1090-fa
      build: ./mlat-client
      image: mlat-client
+  influxdb:
+    restart: always
+    build: ./influxdb
+    volumes:
+      - 'balena-data:/data'
+  telegraf:
+    build: ./telegraf
+    restart: always
+    privileged: true
+  grafana:
+    restart: always
+    build: ./grafana
+    ports:
+      - "80:3000"
+    volumes:
+      - 'balena-data:/data'
+    environment:
+        - 'GF_SESSION_PROVIDER=memory'
+        - 'GF_PATHS_PROVISIONING=/usr/src/app/provisioning'
