@@ -1,5 +1,7 @@
 FROM balenalib/%%BALENA_ARCH%%-debian:stretch as run
 
+EXPOSE 8754
+
 RUN apt-get update && \
 	apt-get install -y wget dirmngr gnupg systemd libcap2-bin
 

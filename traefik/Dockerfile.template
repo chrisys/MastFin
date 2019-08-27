@@ -1,0 +1,28 @@
+FROM balenalib/%%BALENA_ARCH%%-debian:stretch as run
+LABEL maintainer="https://github.com/ketilmo"
+
+EXPOSE 80 8080 443
+
+ENV TRAEFIK_VERSION=1.7.14
+
+RUN apt-get update && \
+	apt-get install -y wget golang && \
+	apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Golang is installed to identify the correct architecture to donwload.
+
+RUN wget --quiet -O /usr/bin/traefik "https://github.com/containous/traefik/releases/download/v${TRAEFIK_VERSION}/traefik_linux-$(go env GOARCH)"; 
+
+# We are done with golang, so let's purge it.
+
+RUN apt-get purge golang
+
+RUN chmod +x /usr/bin/traefik
+
+RUN ln -s /var/run/balena.sock /var/run/docker.sock
+
+COPY start.sh /
+RUN chmod +x /start.sh
+
+ENTRYPOINT ["/start.sh"]
+

@@ -2,6 +2,14 @@ version: '2'
 volumes:
     balena-data:
 services:
+  frontend-proxy:
+    image: traefik # The official Traefik docker image
+    build: ./traefik
+    ports:
+      - "80:80"     # The HTTP port
+#     - "8081:8080" # The Web UI (enabled by --api)
+    labels:
+      io.balena.features.balena-socket: '1'
   dump1090-fa:
     build: ./dump1090-fa
     image: dump1090-fa
@@ -20,6 +28,12 @@ services:
       - "8080"
     ports:
       - "8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.redirect.regex=^(.*)/dump1090-fa$$"
+      - "traefik.frontend.redirect.replacement=$$1/dump1090-fa/"
+      - "traefik.frontend.redirect.permanent=true"
+      - "traefik.a.frontend.rule=PathPrefixStrip:/dump1090-fa;ReplacePathRegex: ^/dump1090-fa/(.*) /$1"
   piaware:
     depends_on:
       - dump1090-fa
@@ -32,8 +46,17 @@ services:
       - dump1090-fa
     build: ./fr24feed
     image: fr24feed
+    ports:
+      - "8754:8754"
     environment:
       - FR24_KEY=
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.redirect.regex=^(.*)/fr24feed$$"
+      - "traefik.frontend.redirect.replacement=$$1/fr24feed/"
+      - "traefik.frontend.redirect.permanent=true"
+      - "traefik.a.frontend.rule=PathPrefixStrip:/fr24feed;ReplacePathRegex: ^/fr24feed/(.*) /$1"
+      - "traefik.b.frontend.rule=Path:/logo.png,/monitor.json,/settings.html,/restart.html,/shutdown.html,/tracked.html,/fr24.css,/jquery.js,/flights.json"
   planefinder:
     depends_on:
       - dump1090-fa
@@ -41,6 +64,15 @@ services:
     image: planefinder
     ports:
      - "30053"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.redirect.regex=^(.*)/planefinder$$"
+      - "traefik.frontend.redirect.replacement=$$1/planefinder/"
+      - "traefik.frontend.redirect.permanent=true"
+      - "traefik.a.frontend.rule=PathPrefixStrip:/planefinder;ReplacePathRegex: ^/planefinder/(.*) /$1"
+      - "traefik.b.frontend.rule=PathPrefix:/"
+      - "traefik.c.frontend.rule=PathPrefix:/ajax/,/assets/,/client/"
+      - "traefik.d.frontend.rule=Path:/map.html,/map3D.html,/data.html,/logs.html,/viz.html,/stats.html,/setup.html"
   ttn-gateway:
     devices:
       - "/dev/bus/usb"
@@ -64,7 +96,7 @@ services:
     restart: always
     build: ./grafana
     ports:
-      - "80:3000"
+      - "3000"
     volumes:
       - 'balena-data:/data'
     environment:
