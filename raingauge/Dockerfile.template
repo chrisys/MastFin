@@ -1,0 +1,14 @@
+FROM balenalib/%%BALENA_ARCH%%-debian-golang as builder
+WORKDIR /usr/src/app
+
+RUN go get github.com/warthog618/gpiod
+RUN go get github.com/warthog618/gpiod/device/rpi
+RUN go get github.com/bep/debounce
+
+COPY main.go ./
+
+RUN go build -ldflags "-linkmode external -extldflags -static" -a main.go
+
+FROM scratch
+COPY --from=builder /usr/src/app/main /main
+CMD ["/main"]

@@ -83,22 +83,9 @@ services:
        - dump1090-fa
      build: ./mlat-client
      image: mlat-client
-  influxdb:
+  raingauge:
     restart: always
-    build: ./influxdb
-    volumes:
-      - 'balena-data:/data'
-  telegraf:
-    build: ./telegraf
-    restart: always
+    build: ./raingauge
     privileged: true
-  grafana:
-    restart: always
-    build: ./grafana
     ports:
-      - "3000"
-    volumes:
-      - 'balena-data:/data'
-    environment:
-        - 'GF_SESSION_PROVIDER=memory'
-        - 'GF_PATHS_PROVISIONING=/usr/src/app/provisioning'
+      - "8000"

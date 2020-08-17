@@ -20,7 +20,7 @@ RUN chmod +x ./dev/build.sh
 RUN ./dev/build.sh
 
 
-FROM balenalib/fincm3-python
+FROM balenalib/fincm3-python:2.7
 
 RUN install_packages libftdi1
 
