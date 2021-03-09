@@ -5,8 +5,9 @@
    "data_upload_interval":"10",
    "connection_type":"1",
    "aircraft_timeout":"30",
-   "data_format":"4",
+   "data_format":"1",
    "latitude":"${LAT}",
    "longitude":"${LON}",
+   "google_maps_api_key":"${GOOGLE_MAPS_API_KEY}",
    "sharecode":"${PLANEFINDER_SHARECODE}"
 }

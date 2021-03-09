@@ -1,18 +1,23 @@
 version: '2'
 volumes:
-    balena-data:
+  settings:
+  radarbox:
+  dashboard:
+  influx:
+  duplicati:
 services:
   frontend-proxy:
-    image: traefik # The official Traefik docker image
+    image: traefik
     build: ./traefik
+    restart: always
     ports:
-      - "80:80"     # The HTTP port
-#     - "8081:8080" # The Web UI (enabled by --api)
+      - "80:80"
     labels:
       io.balena.features.balena-socket: '1'
   dump1090-fa:
     build: ./dump1090-fa
     image: dump1090-fa
+    restart: always
     environment:
       - LAT=
       - LON=
@@ -24,68 +29,163 @@ services:
       - "30003"
       - "30004"
       - "30005"
+      - "30102"
       - "30104"
+      - "30105"
       - "8080"
     ports:
-      - "8080"
+      - "8080:8080"
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.redirect.regex=^(.*)/dump1090-fa$$"
-      - "traefik.frontend.redirect.replacement=$$1/dump1090-fa/"
-      - "traefik.frontend.redirect.permanent=true"
-      - "traefik.a.frontend.rule=PathPrefixStrip:/dump1090-fa;ReplacePathRegex: ^/dump1090-fa/(.*) /$1"
+      - "traefik.http.routers.dump1090-fa.rule=PathPrefix(`/dump1090-fa`)"
+      - "traefik.http.routers.dump1090-fa.middlewares=dump1090-fa-redirect"
+      - "traefik.http.middlewares.dump1090-fa-redirect.redirectregex.regex=^.*/dump1090-fa$$"
+      - "traefik.http.middlewares.dump1090-fa-redirect.redirectregex.replacement=/dump1090-fa/"
+      - "traefik.http.middlewares.dump1090-fa-redirect.redirectregex.permanent=true"
   piaware:
     depends_on:
       - dump1090-fa
     build: ./piaware
     image: piaware
+    restart: always
     environment:
       - FLIGHTAWARE_FEEDER_ID=
+      - DUMP978_ENABLED=false
   fr24feed:
     depends_on:
       - dump1090-fa
     build: ./fr24feed
     image: fr24feed
+    restart: always
     ports:
       - "8754:8754"
     environment:
       - FR24_KEY=
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.redirect.regex=^(.*)/fr24feed$$"
-      - "traefik.frontend.redirect.replacement=$$1/fr24feed/"
-      - "traefik.frontend.redirect.permanent=true"
-      - "traefik.a.frontend.rule=PathPrefixStrip:/fr24feed;ReplacePathRegex: ^/fr24feed/(.*) /$1"
-      - "traefik.b.frontend.rule=Path:/logo.png,/monitor.json,/settings.html,/restart.html,/shutdown.html,/tracked.html,/fr24.css,/jquery.js,/flights.json"
+      - "traefik.http.routers.fr24feed.rule=PathPrefix(`/fr24feed`)"
+      - "traefik.http.routers.fr24feed-a.rule=Path(`/logo.png`)"
+      - "traefik.http.routers.fr24feed-b.rule=Path(`/monitor.json`)"
+      - "traefik.http.routers.fr24feed-c.rule=Path(`/settings.html`)"
+      - "traefik.http.routers.fr24feed-d.rule=Path(`/restart.html`)"
+      - "traefik.http.routers.fr24feed-e.rule=Path(`/tracked.html`)"
+      - "traefik.http.routers.fr24feed-f.rule=Path(`/fr24.css`)"
+      - "traefik.http.routers.fr24feed-g.rule=Path(`/jquery.js`)"
+      - "traefik.http.routers.fr24feed-h.rule=Path(`/flights.json`)"
+      - "traefik.http.routers.fr24feed-i.rule=Path(`/shutdown.html`)"
+      - "traefik.http.routers.fr24feed.middlewares=fr24feed-redirect,fr24feed-stripprefix"
+      - "traefik.http.middlewares.fr24feed-redirect.redirectregex.regex=^.*/fr24feed$$"
+      - "traefik.http.middlewares.fr24feed-redirect.redirectregex.replacement=/fr24feed/"
+      - "traefik.http.middlewares.fr24feed-redirect.redirectregex.permanent=true"
+      - "traefik.http.middlewares.fr24feed-stripprefix.stripprefix.prefixes=/fr24feed"
   planefinder:
     depends_on:
       - dump1090-fa
     build: ./planefinder
     image: planefinder
+    restart: always
     ports:
-     - "30053"
+      - "30053:30053"
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.redirect.regex=^(.*)/planefinder$$"
-      - "traefik.frontend.redirect.replacement=$$1/planefinder/"
-      - "traefik.frontend.redirect.permanent=true"
-      - "traefik.a.frontend.rule=PathPrefixStrip:/planefinder;ReplacePathRegex: ^/planefinder/(.*) /$1"
-      - "traefik.b.frontend.rule=PathPrefix:/"
-      - "traefik.c.frontend.rule=PathPrefix:/ajax/,/assets/,/client/"
-      - "traefik.d.frontend.rule=Path:/map.html,/map3D.html,/data.html,/logs.html,/viz.html,/stats.html,/setup.html"
-  ttn-gateway:
-    devices:
-      - "/dev/bus/usb"
-      - "/dev/ttyAMA0"
-    build: ./ttn-gateway
-  360radar-mlat-client:
-     depends_on:
-       - dump1090-fa
-     build: ./mlat-client
-     image: mlat-client
+      - "traefik.http.routers.planefinder.rule=PathPrefix(`/planefinder`)"
+      - "traefik.http.routers.planefinder-a.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.planefinder-b.rule=PathPrefix(`/ajax/`)"
+      - "traefik.http.routers.planefinder-c.rule=PathPrefix(`/assets/`)"
+      - "traefik.http.routers.planefinder-d.rule=PathPrefix(`/client/`)"
+      - "traefik.http.routers.planefinder-e.rule=Path(`/map.html`)"
+      - "traefik.http.routers.planefinder-f.rule=Path(`/map3D.html`)"
+      - "traefik.http.routers.planefinder-g.rule=Path(`/data.html`)"
+      - "traefik.http.routers.planefinder-h.rule=Path(`/logs.html`)"
+      - "traefik.http.routers.planefinder-i.rule=Path(`/viz.html`)"
+      - "traefik.http.routers.planefinder-j.rule=Path(`/stats.html`)"
+      - "traefik.http.routers.planefinder-l.rule=Path(`/setup.html`)"
+      - "traefik.http.routers.planefinder.middlewares=planefinder-redirect,planefinder-stripprefix"
+      - "traefik.http.middlewares.planefinder-redirect.redirectregex.regex=^.*/planefinder$$"
+      - "traefik.http.middlewares.planefinder-redirect.redirectregex.replacement=/planefinder/"
+      - "traefik.http.middlewares.planefinder-redirect.redirectregex.permanent=true"
+      - "traefik.http.middlewares.planefinder-stripprefix.stripprefix.prefixes=/planefinder"
+
+  radarbox:
+    depends_on:
+      - dump1090-fa
+    build: ./radarbox
+    image: radarbox
+    restart: always
+    expose:
+      - "32088"
+    environment:
+      - RADARBOX_KEY=
+      - LAT=
+      - LON=
+      - ALT=
+#Slight hack to make RadarBox run on i386 and amd64 architectures.
+    volumes:
+      - 'radarbox:/sys/class/thermal:ro'
+      - 'radarbox:/var/radarbox/thermal'
+# Optional: Uncomment to enable custom mlat server.
+  mlat-client:
+    depends_on:
+      - dump1090-fa
+    build: ./mlat-client
+    image: mlat-client
+    restart: always
+    environment:
+      - LAT=
+      - LON=
+      - ALT=
+      - MLAT_CLIENT_USER=
+
   raingauge:
     restart: always
     build: ./raingauge
     privileged: true
     ports:
       - "8000"
+
+  ttn-gateway:
+    devices:
+      - "/dev/bus/usb"
+      - "/dev/ttyAMA0"
+    build: ./ttn-gateway
+
+  connector:
+    image: balenablocks/connector:raspberrypi3
+    restart: always
+    labels:
+      io.balena.features.balena-api: '1'
+    privileged: true
+    environment: 
+      - 'EXTERNAL_HTTP_PULL_NAME=BloomSky'
+      - 'EXTERNAL_HTTP_PULL_URL=http://raingauge:8000/,"http://api.bloomsky.com/api/skydata/?unit=intl"'
+      - 'EXTERNAL_HTTP_PULL_HEADER_Authorization=stm9rN21vNzPm9uex3C76ZXYxA=='
+      - 'EXTERNAL_HTTP_PULL_STRINGS_FIELDS=Storm_UVIndex,Storm_WindDirection'
+
+  duplicati:
+      image: linuxserver/duplicati:latest
+      environment:
+        PUID: "0"
+        PGID: "0"
+        CLI_ARGS: --webservice-interface=any
+      ports:
+        - 8200:8200/tcp
+      volumes:
+        - duplicati:/config
+        - influx:/source/influx
+        - dashboard:/source/dashboard
+
+  dashboard:
+    image: balenablocks/dashboard:raspberrypi3
+    restart: always
+    volumes:
+      - dashboard:/data
+    ports:
+      - '3000:80'
+    environment: 
+      - 'TZ=Europe/London'
+
+  influxdb:
+    image: influxdb:1.8.4
+    restart: always
+    volumes:
+      - influx:/var/lib/influxdb

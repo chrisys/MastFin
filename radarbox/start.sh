@@ -15,12 +15,13 @@ echo " "
 sleep 2
 
 missing_variables=false
-        
+
 # Begin defining all the required configuration variables.
 
-[ -z "$PLANEFINDER_SHARECODE" ] && echo "Plane Finder Sharecode is missing, will abort startup." && missing_variables=true || echo "Plane Finder Sharecode is set: $PLANEFINDER_SHARECODE"
+[ -z "$RADARBOX_KEY" ] && echo "RadarBox key latitude is missing, fetching from server." || echo "RadarBox key latitude is set: $RADARBOX_KEY"
 [ -z "$LAT" ] && echo "Receiver latitude is missing, will abort startup." && missing_variables=true || echo "Receiver latitude is set: $LAT"
 [ -z "$LON" ] && echo "Receiver longitude is missing, will abort startup." && missing_variables=true || echo "Receiver longitude is set: $LON"
+[ -z "$ALT" ] && echo "Receiver altitude is missing, will abort startup." && missing_variables=true || echo "Receiver altitude is set: $ALT"
 [ -z "$RECEIVER_HOST" ] && echo "Receiver host is missing, will abort startup." && missing_variables=true || echo "Receiver host is set: $RECEIVER_HOST"
 [ -z "$RECEIVER_PORT" ] && echo "Receiver port is missing, will abort startup." && missing_variables=true || echo "Receiver port is set: $RECEIVER_PORT"
 
@@ -35,16 +36,38 @@ then
         sleep infinity
 fi
 
+# If UAT is enabled through config, enable it in rbfeed.
+if [[ "$UAT_ENABLED" = "true" ]]; then
+	export UAT_RB_ENABLED=true
+else
+	export UAT_RB_ENABLED=false
+fi
+
 echo "Settings verified, proceeding with startup."
 echo " "
 
 # Variables are verified – continue with startup procedure.
 
-# Configure Planefinder according to environment variables.
-envsubst < /etc/pfclient-config.json.tpl> /etc/pfclient-config.json
+# Write settings to config file and set permissions.
+envsubst < /etc/rbfeeder.ini.tpl > /etc/rbfeeder.ini
+chmod a+rw /etc/rbfeeder.ini
 
-# Start pfclinen and put it in the background.
-/usr/bin/pfclient --config_path=/etc/pfclient-config.json --log_path=/dev/console &
+# Start rbfeeder and put it in the background.
+
+arch="$(dpkg --print-architecture)"
+echo System Architecture: $arch
+
+# If UAT is enabled through config, activate socat port routing.
+if [[ "$UAT_ENABLED" = "true" ]]; then
+	socat TCP-LISTEN:30979,fork TCP:dump978-fa:30979 &
+fi
+
+# If host architecture is i386 or amd64, run RadarBox through armhf software emulation.
+if [ "$arch" = "i386" ] || [ "$arch" = "amd64" ]; then 
+	/usr/bin/qemu-arm-static /usr/bin/rbfeeder &
+else 
+	/usr/bin/rbfeeder &
+fi
 
 # Wait for any services to exit.
 wait -n

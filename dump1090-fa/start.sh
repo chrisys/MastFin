@@ -7,7 +7,6 @@ if [[ ",$(echo -e "${DISABLED_SERVICES}" | tr -d '[:space:]')," = *",$BALENA_SER
         echo "$BALENA_SERVICE_NAME is manually disabled."
         sleep infinity
 fi
-
 # Verify that all the required varibles are set before starting up the application.
 
 echo "Verifying settings..."
@@ -15,14 +14,11 @@ echo " "
 sleep 2
 
 missing_variables=false
-        
+
 # Begin defining all the required configuration variables.
 
-[ -z "$PLANEFINDER_SHARECODE" ] && echo "Plane Finder Sharecode is missing, will abort startup." && missing_variables=true || echo "Plane Finder Sharecode is set: $PLANEFINDER_SHARECODE"
-[ -z "$LAT" ] && echo "Receiver latitude is missing, will abort startup." && missing_variables=true || echo "Receiver latitude is set: $LAT"
+[ -z "$LAT" ] && \echo "Receiver latitude is missing, will abort startup." && missing_variables=true || echo "Receiver latitude is set: $LAT"
 [ -z "$LON" ] && echo "Receiver longitude is missing, will abort startup." && missing_variables=true || echo "Receiver longitude is set: $LON"
-[ -z "$RECEIVER_HOST" ] && echo "Receiver host is missing, will abort startup." && missing_variables=true || echo "Receiver host is set: $RECEIVER_HOST"
-[ -z "$RECEIVER_PORT" ] && echo "Receiver port is missing, will abort startup." && missing_variables=true || echo "Receiver port is set: $RECEIVER_PORT"
 
 # End defining all the required configuration variables.
 
@@ -40,11 +36,11 @@ echo " "
 
 # Variables are verified – continue with startup procedure.
 
-# Configure Planefinder according to environment variables.
-envsubst < /etc/pfclient-config.json.tpl> /etc/pfclient-config.json
-
-# Start pfclinen and put it in the background.
-/usr/bin/pfclient --config_path=/etc/pfclient-config.json --log_path=/dev/console &
-
+# Start dump1090-fa and put it in the background.
+/usr/bin/dump1090-fa --device-type rtlsdr --device "$DUMP1090_DEVICE" --lat "$LAT" --lon "$LON" --fix --gain "$DUMP1090_GAIN" --ppm "$DUMP1090_PPM" --max-range "$DUMP1090_MAX_RANGE" --net --net-heartbeat 60 --net-ro-size 1000 --net-ro-interval 1 --net-http-port 0 --net-ri-port 0 --net-ro-port 30002,30102 --net-sbs-port 30003 --net-bi-port 30004,30104 --net-bo-port 30005,30105 --raw --json-location-accuracy 2 --write-json /run/dump1090-fa --quiet &
+  
+# Start lighthttpd and put it in the background.
+/usr/sbin/lighttpd -D -f /etc/lighttpd/lighttpd.conf &
+ 
 # Wait for any services to exit.
 wait -n

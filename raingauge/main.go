@@ -25,7 +25,8 @@ func main() {
 
 	offset := rpi.J8p7
 	l, err := c.RequestLine(offset,
-		gpiod.WithFallingEdge(trigger))
+		gpiod.WithEventHandler(trigger),
+		gpiod.WithFallingEdge)
 	if err != nil {
 		fmt.Printf("RequestLine returned error: %s\n", err)
 		os.Exit(1)

@@ -1,23 +1,35 @@
-FROM balenalib/%%BALENA_ARCH%%-debian:stretch as run
+FROM balenalib/%%BALENA_ARCH%%-debian:buster AS base
+LABEL maintainer="https://github.com/ketilmo"
 
 EXPOSE 30053
 
-ENV RECEIVER_HOST dump1090-fa
-ENV RECEIVER_PORT 30002
+ENV PLANEFINDER_SHARECODE=
+ENV LAT=
+ENV LON=
+ENV GOOGLE_MAPS_API_KEY=
+ENV RECEIVER_HOST=dump1090-fa
+ENV RECEIVER_PORT=30005
 
-RUN apt-get update && \
-	apt-get install -y wget gettext-base && \
-	apt-get clean && rm -rf /var/lib/apt/lists/*
+ARG PERM_INSTALL="gettext-base wget tini" 
 
-WORKDIR /tmp
+RUN apt update && \
+	apt install -y $PERM_INSTALL && \
+	apt clean && apt autoclean && apt autoremove && \
+	rm -rf /var/lib/apt/lists/*
 
-RUN wget http://client.planefinder.net/pfclient_4.1.1_armhf.deb
-RUN dpkg -i pfclient_4.1.1_armhf.deb
-RUN rm pfclient_4.1.1_armhf.deb
+FROM base AS buildstep
 
+ARG PLANEFINDER_VERSION=5.0.161
+
+COPY planefinder_installer.sh /tmp
 COPY start.sh /
 COPY pfclient-config.json.tpl /etc
 
-RUN chmod +x /start.sh
+WORKDIR /tmp
 
-ENTRYPOINT ["/start.sh"]
+RUN chmod +x /tmp/planefinder_installer.sh && \
+	./planefinder_installer.sh && \
+	chmod +x /start.sh && \
+	rm -rf /tmp/*
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
