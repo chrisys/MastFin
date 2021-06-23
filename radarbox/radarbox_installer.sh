@@ -2,7 +2,7 @@
 set -e
 
 # Import our key to apt-key
-apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 1D043681
+apt-key adv --keyserver hkp://gozer.rediris.es:80 --recv-keys 1D043681
 
 # Move old source
 /bin/rm -f /etc/apt/sources.list.d/rb24.list

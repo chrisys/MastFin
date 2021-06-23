@@ -11,7 +11,7 @@ services:
     build: ./traefik
     restart: always
     ports:
-      - "80:80"
+      - "8100:80"
     labels:
       io.balena.features.balena-socket: '1'
   dump1090-fa:
@@ -34,7 +34,7 @@ services:
       - "30105"
       - "8080"
     ports:
-      - "8080:8080"
+      - "8300:8080"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dump1090-fa.rule=PathPrefix(`/dump1090-fa`)"
@@ -155,11 +155,14 @@ services:
     labels:
       io.balena.features.balena-api: '1'
     privileged: true
+    ports:
+      - "8080:8080"
     environment: 
       - 'EXTERNAL_HTTP_PULL_NAME=BloomSky'
       - 'EXTERNAL_HTTP_PULL_URL=http://raingauge:8000/,"http://api.bloomsky.com/api/skydata/?unit=intl"'
       - 'EXTERNAL_HTTP_PULL_HEADER_Authorization=stm9rN21vNzPm9uex3C76ZXYxA=='
       - 'EXTERNAL_HTTP_PULL_STRINGS_FIELDS=Storm_UVIndex,Storm_WindDirection'
+      - 'ENABLE_EXTERNAL_HTTP_LISTENER=1'
 
   duplicati:
       image: linuxserver/duplicati:latest
