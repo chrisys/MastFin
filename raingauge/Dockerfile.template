@@ -1,6 +1,7 @@
 FROM balenalib/%%BALENA_ARCH%%-debian-golang as builder
 WORKDIR /usr/src/app
 
+RUN go env -w GO111MODULE=off
 RUN go get github.com/warthog618/gpiod
 RUN go get github.com/warthog618/gpiod/device/rpi
 RUN go get github.com/bep/debounce

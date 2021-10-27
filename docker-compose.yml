@@ -143,12 +143,6 @@ services:
     ports:
       - "8000"
 
-  ttn-gateway:
-    devices:
-      - "/dev/bus/usb"
-      - "/dev/ttyAMA0"
-    build: ./ttn-gateway
-
   connector:
     image: balenablocks/connector:raspberrypi3
     restart: always
@@ -183,7 +177,7 @@ services:
     volumes:
       - dashboard:/data
     ports:
-      - '3000:80'
+      - '80:80'
     environment: 
       - 'TZ=Europe/London'
 
